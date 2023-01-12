@@ -3,13 +3,19 @@
 class BlogsController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
 
-  before_action :set_blog, only: %i[show edit update destroy]
+  before_action :correct_user, only: %i[edit update destroy]
 
   def index
     @blogs = Blog.search(params[:term]).published.default_order
   end
 
-  def show; end
+  def show
+    @blog = if current_user.nil?
+              Blog.where(secret: false).find(params[:id])
+            else
+              Blog.find(params[:id]).secret? ? current_user.blogs.find(params[:id]) : Blog.find(params[:id])
+            end
+  end
 
   def new
     @blog = Blog.new
@@ -43,8 +49,8 @@ class BlogsController < ApplicationController
 
   private
 
-  def set_blog
-    @blog = Blog.find(params[:id])
+  def correct_user
+    @blog = current_user.blogs.find(params[:id])
   end
 
   def blog_params
