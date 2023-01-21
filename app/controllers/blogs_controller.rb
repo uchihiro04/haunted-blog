@@ -27,7 +27,6 @@ class BlogsController < ApplicationController
     @blog = current_user.blogs.new(blog_params)
 
     if @blog.save
-      @blog.update(random_eyecatch: false) if invalid_paid_service?
       redirect_to blog_url(@blog), notice: 'Blog was successfully created.'
     else
       render :new, status: :unprocessable_entity
@@ -36,7 +35,6 @@ class BlogsController < ApplicationController
 
   def update
     if @blog.update(blog_params)
-      @blog.update(random_eyecatch: false) if invalid_paid_service?
       redirect_to blog_url(@blog), notice: 'Blog was successfully updated.'
     else
       render :edit, status: :unprocessable_entity
@@ -60,6 +58,10 @@ class BlogsController < ApplicationController
   end
 
   def blog_params
-    params.require(:blog).permit(:title, :content, :secret, :random_eyecatch)
+    if current_user.premium?
+      params.require(:blog).permit(:title, :content, :secret, :random_eyecatch)
+    else
+      params.require(:blog).permit(:title, :content, :secret)
+    end
   end
 end
