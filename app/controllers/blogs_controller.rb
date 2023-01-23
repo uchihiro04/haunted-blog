@@ -53,10 +53,6 @@ class BlogsController < ApplicationController
     @blog = current_user.blogs.find(params[:id])
   end
 
-  def invalid_paid_service?
-    !current_user.premium? && @blog.random_eyecatch?
-  end
-
   def blog_params
     if current_user.premium?
       params.require(:blog).permit(:title, :content, :secret, :random_eyecatch)
